@@ -41,29 +41,42 @@ type FeedUser struct {
 func Feed(c *gin.Context) {
 
 	strToken := c.Query("token")
+	//获取token
 	var haveToken bool
 	if strToken == "" {
 		haveToken = false
 	} else {
 		haveToken = true
 	}
+	//鉴定token是否为空,但不管token是否为空，都是可以正常运行的
+	//haveToken只是决定后面是否需要查询是否关注该用户、是否点赞该视频
+	
 	var strLastTime = c.Query("latest_time")
 	lastTime, err := strconv.ParseInt(strLastTime, 10, 32)
+	//获取的时间由字符串转为整形，10为十进制，32为位数限制，此时的lastTime是一个uint类型的时间
 	if err != nil {
 		lastTime = 0
 	}
+	//如果Query获取时间错误，则设lastTime为0
 
 	fmt.Println(lastTime)
+	//输出lastTime用于测试
+	
 	var feedVideoList []FeedVideo
 	feedVideoList = make([]FeedVideo, 0)
+	//创建FeedVideo数组类型切片，初始长度为0
 	videoList, _ := service.FeedGet(lastTime)
+	//获取视频列表
 	var newTime int64 = 0 //返回的视频的最久的一个的时间
 	for _, x := range videoList {
 		var tmp FeedVideo
 		tmp.Id = x.ID
 		tmp.PlayUrl = x.PlayUrl
+		//遍历videoList
 		//tmp.Author = //依靠用户信息接口查询
 		var user, err = service.GetUser(x.AuthorId)
+		
+		//获取用户信息
 		var feedUser FeedUser
 		if err == nil { //用户存在
 			feedUser.Id = user.ID
